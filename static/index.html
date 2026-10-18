@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cardly - Profile Card Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- html2canvas library for PNG downloading -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-[#f8fafc] text-slate-800 min-h-screen flex flex-col font-sans">
+
+  <!-- Header / Navbar -->
+  <header class="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between">
+    <div class="flex items-center space-x-2">
+      <div class="bg-blue-600 text-white font-bold px-2.5 py-1 rounded-lg text-lg">C</div>
+      <span class="text-xl font-bold tracking-tight text-slate-900">Cardly</span>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-6xl w-full mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
+    
+    <!-- Left Column: Form Section -->
+    <div class="space-y-6">
+      <div>
+        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Create your profile card</h1>
+        <p class="text-slate-500 text-sm mt-1">Fill in the details and submit. The server builds the card and sends it back.</p>
+      </div>
+
+      <form id="profileForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Name</label>
+          <input type="text" id="name" placeholder="Your full name" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-xs text-sm" required>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Bio</label>
+          <textarea id="bio" rows="3" placeholder="A short line about you" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-xs text-sm resize-y" required></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Image URL <span class="text-slate-400 font-normal lowercase">(optional)</span></label>
+          <input type="url" id="imageUrl" placeholder="https://example.com/photo.jpg" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-xs text-sm">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Role</label>
+          <input type="text" id="role" placeholder="e.g. Product Designer" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-xs text-sm">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Location</label>
+          <input type="text" id="location" placeholder="City, Country" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-xs text-sm">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Website or LinkedIn</label>
+          <input type="text" id="website" placeholder="https://linkedin.com/in/username" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-xs text-sm">
+        </div>
+
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-md transition-colors text-sm">
+          Generate card
+        </button>
+      </form>
+    </div>
+
+    <!-- Right Column: Card Preview Area -->
+    <div class="flex flex-col items-center justify-center min-h-[480px]">
+      
+      <!-- Placeholder View -->
+      <div id="placeholderState" class="bg-white border border-slate-200 rounded-2xl p-10 text-center space-y-3 w-full max-w-sm shadow-xs">
+        <div class="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-400">
+          <i data-lucide="user" class="w-6 h-6"></i>
+        </div>
+        <h3 class="font-bold text-slate-800 text-base">Your card appears here</h3>
+        <p class="text-slate-400 text-xs">Submit the form to get your profile card</p>
+      </div>
+
+      <!-- Generated Profile Card Wrapper -->
+      <div id="cardResultState" class="hidden w-full max-w-sm space-y-4">
+        
+        <!-- The Visual Card Element -->
+        <div id="cardToCapture" class="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-xl flex flex-col items-center text-center">
+          
+          <!-- Card Header Banner -->
+          <div class="w-full bg-blue-600 h-28 relative">
+            
+            <!-- Avatar / Initials Circle -->
+            <div class="absolute -bottom-10 left-1/2 transform -translate-x-1/2">
+              <div id="avatarContainer" class="w-20 h-20 rounded-full border-4 border-white shadow-md overflow-hidden bg-amber-300 flex items-center justify-center">
+                <!-- Dynamic Image or Initials -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Body Content -->
+          <div class="pt-14 pb-8 px-6 space-y-3 w-full">
+            <h2 id="cardName" class="text-xl font-extrabold text-slate-900"></h2>
+            <p id="cardRole" class="text-blue-600 text-xs font-bold -mt-1"></p>
+
+            <p id="cardBio" class="text-slate-600 text-xs leading-relaxed max-w-xs mx-auto py-1"></p>
+
+            <div class="space-y-3 pt-2 border-t border-slate-100 text-xs text-slate-500 flex flex-col items-center">
+              <p id="cardLocation"></p>
+              
+              <!-- Icon Link Badge with SVG Container -->
+              <a id="cardSocialLink" href="#" target="_blank" class="hidden items-center space-x-2 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-600 px-3.5 py-1.5 rounded-full font-medium transition text-xs border border-slate-200 shadow-2xs">
+                <span id="socialIconContainer" class="flex items-center justify-center"></span>
+                <span id="socialText">LinkedIn</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Actions -->
+        <div class="space-y-2.5">
+          <button id="downloadBtn" onclick="downloadCard()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-md transition-colors text-xs flex items-center justify-center space-x-2">
+            <i data-lucide="download" class="w-4 h-4"></i>
+            <span>Download card (PNG)</span>
+          </button>
+
+          <div class="grid grid-cols-2 gap-3">
+            <button onclick="editDetails()" class="w-full bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 font-bold py-2.5 rounded-xl text-xs transition">
+              Edit details
+            </button>
+            <button onclick="createAnother()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-xs transition">
+              Create another
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    const profileForm = document.getElementById('profileForm');
+    const placeholderState = document.getElementById('placeholderState');
+    const cardResultState = document.getElementById('cardResultState');
+
+    // Submit form and request profile payload from Python FastAPI backend
+    profileForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const payload = {
+        name: document.getElementById('name').value,
+        bio: document.getElementById('bio').value,
+        image_url: document.getElementById('imageUrl').value || null,
+        role: document.getElementById('role').value || null,
+        location: document.getElementById('location').value || null,
+        website_or_linkedin: document.getElementById('website').value || null
+      };
+
+      try {
+        const response = await fetch('/api/generate-card', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) throw new Error("Failed to process request");
+
+        const data = await response.json();
+        renderCard(data);
+      } catch (err) {
+        alert("Error generating card: " + err.message);
+      }
+    });
+
+    // Populate card UI with returned backend payload
+    function renderCard(data) {
+      document.getElementById('cardName').textContent = data.name;
+      
+      const roleElem = document.getElementById('cardRole');
+      roleElem.textContent = data.role || '';
+      roleElem.style.display = data.role ? 'block' : 'none';
+
+      document.getElementById('cardBio').textContent = data.bio;
+
+      const locElem = document.getElementById('cardLocation');
+      locElem.textContent = data.location || '';
+      locElem.style.display = data.location ? 'block' : 'none';
+
+      // Social / Website Link Icon Badge Logic
+      const socialLink = document.getElementById('cardSocialLink');
+      const socialIconContainer = document.getElementById('socialIconContainer');
+      const socialText = document.getElementById('socialText');
+
+      // Embedded SVGs for reliable rendering
+      const icons = {
+        linkedin: `<svg class="w-3.5 h-3.5 fill-current text-[#0A66C2]" viewBox="0 0 24 24"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-1.3.36-2.5 1.95-2.5 1.56 0 1.59 1.46 1.59 2.58v4.85h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/></svg>`,
+        github: `<svg class="w-3.5 h-3.5 fill-current text-slate-900" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.1-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg>`,
+        globe: `<svg class="w-3.5 h-3.5 text-slate-600 stroke-current" fill="none" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`
+      };
+
+      if (data.website_or_linkedin) {
+        const url = data.website_or_linkedin.toLowerCase();
+        
+        if (url.includes('linkedin.com')) {
+          socialIconContainer.innerHTML = icons.linkedin;
+          socialText.textContent = 'LinkedIn';
+        } else if (url.includes('github.com')) {
+          socialIconContainer.innerHTML = icons.github;
+          socialText.textContent = 'GitHub';
+        } else {
+          socialIconContainer.innerHTML = icons.globe;
+          socialText.textContent = 'Website';
+        }
+
+        socialLink.href = data.website_or_linkedin.startsWith('http') ? data.website_or_linkedin : `https://${data.website_or_linkedin}`;
+        socialLink.classList.remove('hidden');
+        socialLink.classList.add('inline-flex');
+      } else {
+        socialLink.classList.add('hidden');
+        socialLink.classList.remove('inline-flex');
+      }
+
+      // Avatar Logic (Image vs Initials)
+      const avatarContainer = document.getElementById('avatarContainer');
+      if (data.image_url) {
+        avatarContainer.innerHTML = `<img src="${data.image_url}" alt="Avatar" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'text-slate-900 font-extrabold text-xl\'>${data.initials}</span>';">`;
+      } else {
+        avatarContainer.innerHTML = `<span class="text-slate-900 font-extrabold text-xl">${data.initials}</span>`;
+      }
+
+      placeholderState.classList.add('hidden');
+      cardResultState.classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    // Download Card as PNG Image
+    function downloadCard() {
+      const cardElement = document.getElementById('cardToCapture');
+      html2canvas(cardElement, { scale: 2, useCORS: true }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = 'profile-card.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
+    }
+
+    function editDetails() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function createAnother() {
+      profileForm.reset();
+      cardResultState.classList.add('hidden');
+      placeholderState.classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    lucide.createIcons();
+  </script>
+</body>
+</html>
